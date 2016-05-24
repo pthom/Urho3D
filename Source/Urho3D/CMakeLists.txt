@@ -424,6 +424,8 @@ if (URHO3D_LIB_TYPE STREQUAL SHARED)
     endif ()
 endif ()
 
+target_link_libraries(${TARGET_NAME} ${HUNTER_THIRD_PARTY_DEPS})  
+
 # Install headers for using the Urho3D library
 install_header_files (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ DESTINATION ${DEST_INCLUDE_DIR} FILES_MATCHING PATTERN *.h USE_FILE_SYMLINK)    # Note: the trailing slash is significant
 install_header_files (FILES ${CMAKE_CURRENT_BINARY_DIR}/librevision.h ${CMAKE_CURRENT_BINARY_DIR}/Urho3D.h DESTINATION ${DEST_INCLUDE_DIR})

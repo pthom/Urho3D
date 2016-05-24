@@ -38,13 +38,20 @@ if (COMMAND cmake_policy)
         # MACOSX_RPATH is enabled by default
         cmake_policy (SET CMP0042 NEW)
     endif ()
-endif ()
+  endif ()
+
+  ### Hunter snapshot that will be used ###
+include("CMake/HunterGate.cmake")
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.14.19.tar.gz"
+    SHA1 "ab886ddc6be6870a403224ee8f587e640827b1d9"
+)
 
 # Set project name
 project (Urho3D)
 
 # Set CMake modules search path
-set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake/Modules)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake/Modules")
 
 # Include Urho3D Cmake common module
 include (Urho3D-CMake-common)

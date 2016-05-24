@@ -53,7 +53,31 @@ if (URHO3D_LIB_TYPE STREQUAL SHARED AND NOT WIN32 AND NOT ANDROID AND NOT IOS AN
 endif ()
 
 # Add targets
-foreach (TARGET FreeType JO LZ4 PugiXml rapidjson SDL StanHull STB)
+
+# NOTE: FreeType is satisfied by hunter
+# NOTE: rapidjson is satisified by hunter
+## #################################################################
+## Dependencies - FreeType
+## #################################################################
+hunter_add_package(FreeType)
+find_package(FreeType CONFIG REQUIRED)
+## #################################################################
+## Dependencies - RapidJSON
+## #################################################################
+hunter_add_package(RapidJSON)
+find_package(RapidJSON REQUIRED)
+
+# no pkg-config:
+include_directories(${RAPIDJSON_INCLUDE_DIR})
+
+get_cmake_property(_variableNames VARIABLES)
+foreach (_variableName ${_variableNames})
+  message(STATUS "VARIABLE: ${_variableName}=${${_variableName}}")
+endforeach()
+
+set(HUNTER_THIRD_PARTY_DEPS RapidJSON::RapidJSON FreeType::FreeType)
+
+foreach (TARGET JO LZ4 PugiXml SDL StanHull STB)
     add_subdirectory (ThirdParty/${TARGET})
 endforeach ()
 
