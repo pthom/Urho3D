@@ -59,13 +59,13 @@ endif ()
 ## #################################################################
 ## Dependencies - FreeType
 ## #################################################################
-hunter_add_package(FreeType)
-find_package(FreeType CONFIG REQUIRED)
+hunter_add_package(freetype)
+find_package(freetype CONFIG REQUIRED)
 ## #################################################################
 ## Dependencies - RapidJSON
 ## #################################################################
-hunter_add_package(RapidJSON)
-find_package(RapidJSON REQUIRED)
+hunter_add_package(rapidjson)
+find_package(rapidjson REQUIRED)
 
 # no pkg-config:
 include_directories(${RAPIDJSON_INCLUDE_DIR})
@@ -75,7 +75,7 @@ foreach (_variableName ${_variableNames})
   message(STATUS "VARIABLE: ${_variableName}=${${_variableName}}")
 endforeach()
 
-set(HUNTER_THIRD_PARTY_DEPS RapidJSON::RapidJSON FreeType::FreeType)
+set(HUNTER_THIRD_PARTY_DEPS freetype::freetype)
 
 foreach (TARGET JO LZ4 PugiXml SDL StanHull STB)
     add_subdirectory (ThirdParty/${TARGET})
