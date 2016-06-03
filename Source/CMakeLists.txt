@@ -89,12 +89,8 @@ find_package(StanHull CONFIG REQUIRED)
 ## #################################################################
 ## Dependencies - STB
 ## #################################################################
-#hunter_add_package(STB)
-#find_package(STB CONFIG REQUIRED)
-
-#CMake Error at cmake_install.cmake:31 (file):
-#  file INSTALL cannot find
-#  "_Base/xxxxxxx/9722418/095ad7a/Build/STB/Source/stb_image.h;stb_image_write.h;stb_rect_pack.h;stb_vorbis.h".
+hunter_add_package(STB)
+find_package(STB CONFIG REQUIRED)
 
 # no pkg-config:
 include_directories(${RAPIDJSON_INCLUDE_DIR})
@@ -104,9 +100,9 @@ foreach (_variableName ${_variableNames})
   message(STATUS "VARIABLE: ${_variableName}=${${_variableName}}")
 endforeach()
 
-set(HUNTER_THIRD_PARTY_DEPS freetype::freetype JO::JO LZ4::LZ4 PugiXml::PugiXml StanHull::StanHull)# STB::STB)
+set(HUNTER_THIRD_PARTY_DEPS freetype::freetype JO::JO LZ4::LZ4 PugiXml::PugiXml StanHull::StanHull STB::STB)
 
-foreach (TARGET SDL STB)  # TODO: STB
+foreach (TARGET SDL)
     add_subdirectory (ThirdParty/${TARGET})
 endforeach ()
 
