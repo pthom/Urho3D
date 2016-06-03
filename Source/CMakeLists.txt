@@ -147,13 +147,32 @@ if (URHO3D_PHYSICS)
     add_subdirectory (ThirdParty/Bullet)
 endif ()
 
+message("URHO3D_OPENGL : ${URHO3D_OPENGL}")
+message("URHO3D_D3D11 : ${URHO3D_D3D11}")
+
 if (NOT IOS AND NOT ANDROID AND NOT RPI AND NOT WEB)
-    if (URHO3D_OPENGL)
-        add_subdirectory (ThirdParty/GLEW)
-    elseif (NOT URHO3D_D3D11)
-        add_subdirectory (ThirdParty/MojoShader)
-    endif ()
-    add_subdirectory (ThirdParty/LibCpuId)
+  if (URHO3D_OPENGL)
+
+    ## #################################################################
+    ## Dependencies - GLEW
+    ## #################################################################
+    #add_subdirectory (ThirdParty/GLEW)
+    hunter_add_package(GLEW)
+    find_package(GLEW CONFIG REQUIRED)
+    list(APPEND HUNTER_THIRD_PARTY_DEPS GLEW::GLEW)
+    
+  elseif (NOT URHO3D_D3D11)
+
+    ## #################################################################
+    ## Dependencies - MojoShader
+    ## #################################################################
+    #add_subdirectory (ThirdParty/MojoShader)      
+    hunter_add_package(MojoShader)
+    find_package(MojoShader CONFIG REQUIRED)
+    list(APPEND HUNTER_THIRD_PARTY_DEPS MojoShader::MojoShader)
+
+  endif ()
+  add_subdirectory (ThirdParty/LibCpuId)
 endif ()
 
 # Urho3D game engine library
