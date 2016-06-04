@@ -144,11 +144,14 @@ if (URHO3D_URHO2D)
 endif ()
 
 if (URHO3D_PHYSICS)
-    add_subdirectory (ThirdParty/Bullet)
+  ## #################################################################
+  ## Dependencies - Bullet
+  ## #################################################################
+  #add_subdirectory (ThirdParty/Bullet)
+  hunter_add_package(Bullet)
+  find_package(Bullet CONFIG REQUIRED)
+  list(APPEND HUNTER_THIRD_PARTY_DEPS Bullet::Bullet)
 endif ()
-
-message("URHO3D_OPENGL : ${URHO3D_OPENGL}")
-message("URHO3D_D3D11 : ${URHO3D_D3D11}")
 
 if (NOT IOS AND NOT ANDROID AND NOT RPI AND NOT WEB)
   if (URHO3D_OPENGL)
