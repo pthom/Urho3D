@@ -116,8 +116,15 @@ if (URHO3D_LUA)
 endif ()
 
 if (URHO3D_NETWORK)
-    add_subdirectory (ThirdParty/Civetweb)
-    add_subdirectory (ThirdParty/kNet)
+  add_subdirectory (ThirdParty/Civetweb)
+
+  ## #################################################################
+  ## Dependencies - kNet
+  ## #################################################################
+  #add_subdirectory (ThirdParty/kNet)
+  hunter_add_package(kNet)
+  find_package(kNet CONFIG REQUIRED)
+  list(APPEND HUNTER_THIRD_PARTY_DEPS kNet::kNet)
 endif ()
 
 if (URHO3D_DATABASE_ODBC)
