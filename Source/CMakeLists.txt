@@ -124,7 +124,14 @@ if (URHO3D_DATABASE_ODBC)
     add_subdirectory (ThirdParty/nanodbc)
 endif ()
 if (URHO3D_DATABASE_SQLITE)
-    add_subdirectory (ThirdParty/SQLite)
+  ## #################################################################
+  ## Dependencies - SQLite
+  ## #################################################################
+  #add_subdirectory (ThirdParty/SQLite)
+  message("USE SQLITE")
+  hunter_add_package(SQLite)
+  find_package(SQLite CONFIG REQUIRED)
+  list(APPEND HUNTER_THIRD_PARTY_DEPS sqlite::sqlite)
 endif ()
 
 if (URHO3D_NAVIGATION)
