@@ -142,8 +142,7 @@ if (URHO3D_DATABASE_SQLITE)
 endif ()
 
 if (URHO3D_NAVIGATION)
-  message(HELLO)
-  return()
+
   ## #################################################################
   ## Dependencies - Box2D
   ## #################################################################
@@ -157,7 +156,11 @@ if (URHO3D_NAVIGATION)
   find_package(DetourCrowd CONFIG REQUIRED)
   list(APPEND HUNTER_THIRD_PARTY_DEPS DetourCrowd::DetourCrowd)
 
-  add_subdirectory (ThirdParty/DetourTileCache)
+  #add_subdirectory (ThirdParty/DetourTileCache)
+  hunter_add_package(DetourTileCache)
+  find_package(DetourTileCache CONFIG REQUIRED)
+  list(APPEND HUNTER_THIRD_PARTY_DEPS DetourTileCache::DetourTileCache)
+
   add_subdirectory (ThirdParty/Recast)
 endif ()
 
