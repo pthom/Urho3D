@@ -151,8 +151,12 @@ if (URHO3D_NAVIGATION)
   hunter_add_package(Detour)
   find_package(Detour CONFIG REQUIRED)
   list(APPEND HUNTER_THIRD_PARTY_DEPS Detour::Detour)
-  
-  add_subdirectory (ThirdParty/DetourCrowd)
+
+  #add_subdirectory (ThirdParty/DetourCrowd)
+  hunter_add_package(DetourCrowd)
+  find_package(DetourCrowd CONFIG REQUIRED)
+  list(APPEND HUNTER_THIRD_PARTY_DEPS DetourCrowd::DetourCrowd)
+
   add_subdirectory (ThirdParty/DetourTileCache)
   add_subdirectory (ThirdParty/Recast)
 endif ()
