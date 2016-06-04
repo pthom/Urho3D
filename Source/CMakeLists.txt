@@ -172,7 +172,15 @@ if (NOT IOS AND NOT ANDROID AND NOT RPI AND NOT WEB)
     list(APPEND HUNTER_THIRD_PARTY_DEPS MojoShader::MojoShader)
 
   endif ()
-  add_subdirectory (ThirdParty/LibCpuId)
+
+  ## #################################################################
+  ## Dependencies - LibCpuId
+  ## #################################################################
+  #add_subdirectory (ThirdParty/LibCpuId)
+  hunter_add_package(LibCpuId)
+  find_package(LibCpuId CONFIG REQUIRED)
+  list(APPEND HUNTER_THIRD_PARTY_DEPS LibCpuId::LibCpuId)
+  
 endif ()
 
 # Urho3D game engine library
