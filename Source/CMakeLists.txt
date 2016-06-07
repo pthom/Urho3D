@@ -156,7 +156,7 @@ endif ()
 if (URHO3D_NAVIGATION)
 
   ## #################################################################
-  ## Dependencies - Box2D
+  ## Dependencies - Detour, DetourCrow, DetourCache
   ## #################################################################
   #add_subdirectory (ThirdParty/Detour)
   hunter_add_package(Detour)
@@ -176,7 +176,13 @@ if (URHO3D_NAVIGATION)
   find_package(DetourTileCache CONFIG REQUIRED)
   list(APPEND HUNTER_THIRD_PARTY_DEPS DetourTileCache::DetourTileCache)
 
-  add_subdirectory (ThirdParty/Recast)
+  ## #################################################################
+  ## Dependencies - Recast
+  ## #################################################################
+  #add_subdirectory (ThirdParty/Recast)
+  hunter_add_package(Recast)
+  find_package(Recast CONFIG REQUIRED)
+  list(APPEND HUNTER_THIRD_PARTY_DEPS Recast::Recast)
 endif ()
 
 if (URHO3D_URHO2D)
