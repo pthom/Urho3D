@@ -107,7 +107,13 @@ foreach (TARGET SDL)
 endforeach ()
 
 if (URHO3D_ANGELSCRIPT)
-    add_subdirectory (ThirdParty/AngelScript)
+  ## #################################################################
+  ## Dependencies - AngelScript
+  ## #################################################################
+  #add_subdirectory (ThirdParty/AngelScript)
+  hunter_add_package(AngelScript)
+  find_package(AngelScript CONFIG REQUIRED)
+  list(APPEND HUNTER_THIRD_PARTY_DEPS AngelScript::AngelScript)
 endif ()
 
 if (URHO3D_LUA)
@@ -151,6 +157,9 @@ if (URHO3D_NAVIGATION)
   find_package(Detour CONFIG REQUIRED)
   list(APPEND HUNTER_THIRD_PARTY_DEPS Detour::Detour)
 
+  # For now we add the full path explicitly to avoid updating source
+  include_directories("${DETOUR_ROOT}/include/Detour") 
+
   #add_subdirectory (ThirdParty/DetourCrowd)
   hunter_add_package(DetourCrowd)
   find_package(DetourCrowd CONFIG REQUIRED)
@@ -188,6 +197,11 @@ if (URHO3D_PHYSICS)
   hunter_add_package(Bullet)
   find_package(Bullet CONFIG REQUIRED)
   list(APPEND HUNTER_THIRD_PARTY_DEPS Bullet::Bullet)
+
+  # Support includes lacking full path:
+  #include "LinearMath/btHashMap.h"
+  include_directories("${BULLET_ROOT}/include/Bullet")
+  
 endif ()
 
 if (NOT IOS AND NOT ANDROID AND NOT RPI AND NOT WEB)
