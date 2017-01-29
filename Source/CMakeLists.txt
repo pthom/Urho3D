@@ -224,8 +224,8 @@ if (NOT ANDROID AND NOT ARM AND NOT WEB)
     ## #################################################################
     #add_subdirectory (ThirdParty/GLEW)
     hunter_add_package(glew)
-    find_package(GLEW CONFIG REQUIRED)
-    list(APPEND HUNTER_THIRD_PARTY_DEPS GLEW::GLEW)
+    find_package(glew CONFIG REQUIRED)
+    list(APPEND HUNTER_THIRD_PARTY_DEPS glew::glew)
     
   elseif (NOT URHO3D_D3D11)
 
