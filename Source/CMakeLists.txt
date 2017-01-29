@@ -64,8 +64,9 @@ find_package(freetype CONFIG REQUIRED)
 ## #################################################################
 ## Dependencies - RapidJSON
 ## #################################################################
-hunter_add_package(rapidjson)
-find_package(rapidjson REQUIRED)
+add_subdirectory(ThirdParty/rapidjson)
+# hunter_add_package(rapidjson)
+# find_package(rapidjson REQUIRED)
 ## #################################################################
 ## Dependencies - JO
 ## #################################################################
@@ -93,7 +94,7 @@ hunter_add_package(STB)
 find_package(STB CONFIG REQUIRED)
 
 # no pkg-config:
-include_directories(${RAPIDJSON_INCLUDE_DIR})
+# include_directories(${RAPIDJSON_INCLUDE_DIR})
 
 get_cmake_property(_variableNames VARIABLES)
 foreach (_variableName ${_variableNames})
@@ -110,10 +111,10 @@ if (URHO3D_ANGELSCRIPT)
   ## #################################################################
   ## Dependencies - AngelScript
   ## #################################################################
-  #add_subdirectory (ThirdParty/AngelScript)
-  hunter_add_package(AngelScript)
-  find_package(AngelScript CONFIG REQUIRED)
-  list(APPEND HUNTER_THIRD_PARTY_DEPS AngelScript::AngelScript)
+  add_subdirectory (ThirdParty/AngelScript)
+#   hunter_add_package(AngelScript)
+#   find_package(AngelScript CONFIG REQUIRED)
+#   list(APPEND HUNTER_THIRD_PARTY_DEPS AngelScript::AngelScript)
 endif ()
 
 if (URHO3D_LUA)
@@ -133,10 +134,10 @@ if (URHO3D_NETWORK)
   ## #################################################################
   ## Dependencies - kNet
   ## #################################################################
-  #add_subdirectory (ThirdParty/kNet)
-  hunter_add_package(kNet)
-  find_package(kNet CONFIG REQUIRED)
-  list(APPEND HUNTER_THIRD_PARTY_DEPS kNet::kNet)
+  add_subdirectory (ThirdParty/kNet)
+#   hunter_add_package(kNet)
+#   find_package(kNet CONFIG REQUIRED)
+#   list(APPEND HUNTER_THIRD_PARTY_DEPS kNet::kNet)
 endif ()
 
 if (URHO3D_DATABASE_ODBC)
@@ -239,13 +240,13 @@ if (NOT ANDROID AND NOT ARM AND NOT WEB)
 
   endif ()
     if (NOT CMAKE_SYSTEM_NAME STREQUAL Linux)
-  ## #################################################################
-  ## Dependencies - LibCpuId
-  ## #################################################################
-  #add_subdirectory (ThirdParty/LibCpuId)
-  hunter_add_package(LibCpuId)
-  find_package(LibCpuId CONFIG REQUIRED)
-  list(APPEND HUNTER_THIRD_PARTY_DEPS LibCpuId::LibCpuId)
+        ## #################################################################
+        ## Dependencies - LibCpuId
+        ## #################################################################
+        add_subdirectory (ThirdParty/LibCpuId)
+        # hunter_add_package(LibCpuId)
+        # find_package(LibCpuId CONFIG REQUIRED)
+        # list(APPEND HUNTER_THIRD_PARTY_DEPS LibCpuId::LibCpuId)
     endif ()
 endif ()
 
