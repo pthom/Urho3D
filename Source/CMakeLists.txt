@@ -216,14 +216,14 @@ if (URHO3D_PHYSICS)
   
 endif ()
 
-if (NOT IOS AND NOT ANDROID AND NOT RPI AND NOT WEB)
+if (NOT ANDROID AND NOT ARM AND NOT WEB)
   if (URHO3D_OPENGL)
 
     ## #################################################################
     ## Dependencies - GLEW
     ## #################################################################
     #add_subdirectory (ThirdParty/GLEW)
-    hunter_add_package(GLEW)
+    hunter_add_package(glew)
     find_package(GLEW CONFIG REQUIRED)
     list(APPEND HUNTER_THIRD_PARTY_DEPS GLEW::GLEW)
     
@@ -238,7 +238,7 @@ if (NOT IOS AND NOT ANDROID AND NOT RPI AND NOT WEB)
     list(APPEND HUNTER_THIRD_PARTY_DEPS MojoShader::MojoShader)
 
   endif ()
-
+    if (NOT CMAKE_SYSTEM_NAME STREQUAL Linux)
   ## #################################################################
   ## Dependencies - LibCpuId
   ## #################################################################
@@ -246,7 +246,7 @@ if (NOT IOS AND NOT ANDROID AND NOT RPI AND NOT WEB)
   hunter_add_package(LibCpuId)
   find_package(LibCpuId CONFIG REQUIRED)
   list(APPEND HUNTER_THIRD_PARTY_DEPS LibCpuId::LibCpuId)
-  
+    endif ()
 endif ()
 
 # Urho3D game engine library
