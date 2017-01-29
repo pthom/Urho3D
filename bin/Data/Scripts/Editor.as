@@ -22,6 +22,8 @@
 #include "Scripts/Editor/EditorColorWheel.as"
 #include "Scripts/Editor/EditorEventsHandlers.as"
 #include "Scripts/Editor/EditorViewDebugIcons.as"
+#include "Scripts/Editor/EditorViewSelectableOrigins.as"
+#include "Scripts/Editor/EditorViewPaintSelection.as"
 
 String configFileName;
 
@@ -74,8 +76,8 @@ void FirstFrame()
     ParseArguments();
     // Switch to real frame handler after initialization
     SubscribeToEvent("Update", "HandleUpdate");
-    SubscribeToEvent("ReloadFinished", "HandleReloadFinished");
-    SubscribeToEvent("ReloadFailed", "HandleReloadFailed");
+    SubscribeToEvent("ReloadFinished", "HandleReloadFinishOrFail");
+    SubscribeToEvent("ReloadFailed", "HandleReloadFinishOrFail");
     EditorSubscribeToEvents();
 }
 
@@ -127,7 +129,9 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
     UpdateGizmo();
     UpdateDirtyUI();
     UpdateViewDebugIcons();
-
+    UpdateOrigins();
+    UpdatePaintSelection();
+    
     // Handle Particle Editor looping.
     if (particleEffectWindow !is null and particleEffectWindow.visible)
     {
@@ -148,14 +152,12 @@ void HandleUpdate(StringHash eventType, VariantMap& eventData)
     }
 }
 
-void HandleReloadFinished(StringHash eventType, VariantMap& eventData)
+void HandleReloadFinishOrFail(StringHash eventType, VariantMap& eventData)
 {
-    attributesFullDirty = true;
-}
-
-void HandleReloadFailed(StringHash eventType, VariantMap& eventData)
-{
-    attributesFullDirty = true;
+    Resource@ res = cast<Resource>(GetEventSender());
+    // Only refresh inspector when reloading scripts (script attributes may change)
+    if (res !is null && (res.typeName == "ScriptFile" || res.typeName == "LuaFile"))
+        attributesFullDirty = true;
 }
 
 void LoadConfig()
@@ -249,6 +251,8 @@ void LoadConfig()
         if (renderingElem.HasAttribute("specularlighting")) renderer.specularLighting = renderingElem.GetBool("specularlighting");
         if (renderingElem.HasAttribute("dynamicinstancing")) renderer.dynamicInstancing = renderingElem.GetBool("dynamicinstancing");
         if (renderingElem.HasAttribute("framelimiter")) engine.maxFps = renderingElem.GetBool("framelimiter") ? 200 : 0;
+        if (renderingElem.HasAttribute("gammacorrection")) gammaCorrection = renderingElem.GetBool("gammacorrection");
+        if (renderingElem.HasAttribute("hdr")) HDR = renderingElem.GetBool("hdr");
     }
 
     if (!uiElem.isNull)
@@ -382,6 +386,8 @@ void SaveConfig()
     }
 
     renderingElem.SetBool("framelimiter", engine.maxFps > 0);
+    renderingElem.SetBool("gammacorrection", gammaCorrection);
+    renderingElem.SetBool("hdr", HDR);
 
     uiElem.SetFloat("minopacity", uiMinOpacity);
     uiElem.SetFloat("maxopacity", uiMaxOpacity);

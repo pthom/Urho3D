@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,14 +54,6 @@ PackageFile::~PackageFile()
 
 bool PackageFile::Open(const String& fileName, unsigned startOffset)
 {
-#ifdef __ANDROID__
-    if (URHO3D_IS_ASSET(fileName))
-    {
-        URHO3D_LOGERROR("Package files within the apk are not supported on Android");
-        return false;
-    }
-#endif
-
     SharedPtr<File> file(new File(context_, fileName));
     if (!file->IsOpen())
         return false;

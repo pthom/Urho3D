@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -208,7 +208,7 @@ void HelloGUI::HandleClosePressed(StringHash eventType, VariantMap& eventData)
 void HelloGUI::HandleControlClicked(StringHash eventType, VariantMap& eventData)
 {
     // Get the Text control acting as the Window's title
-    Text* windowTitle = static_cast<Text*>(window_->GetChild("WindowTitle", true));
+    Text* windowTitle = window_->GetChildStaticCast<Text>("WindowTitle", true);
 
     // Get control that was clicked
     UIElement* clicked = static_cast<UIElement*>(eventData[UIMouseClick::P_ELEMENT].GetPtr());

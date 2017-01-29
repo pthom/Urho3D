@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -236,7 +236,7 @@ bool FontFaceBitmap::Load(FontFace* fontFace, bool usedGlyphs)
         image->SetSize(width, height, components);
         memset(image->GetData(), 0, width * height * components);
 
-        newImages.Push(image);
+        newImages[i] = image;
     }
 
     for (HashMap<unsigned, FontGlyph>::Iterator i = glyphMapping_.Begin(); i != glyphMapping_.End(); ++i)
@@ -355,15 +355,14 @@ unsigned FontFaceBitmap::ConvertFormatToNumComponents(unsigned format)
 
 SharedPtr<Image> FontFaceBitmap::SaveFaceTexture(Texture2D* texture)
 {
-    Image* image = new Image(font_->GetContext());
+    SharedPtr<Image> image(new Image(font_->GetContext()));
     image->SetSize(texture->GetWidth(), texture->GetHeight(), ConvertFormatToNumComponents(texture->GetFormat()));
     if (!texture->GetData(0, image->GetData()))
     {
-        delete image;
         URHO3D_LOGERROR("Could not save texture to image resource");
         return SharedPtr<Image>();
     }
-    return SharedPtr<Image>(image);
+    return image;
 }
 
 bool FontFaceBitmap::SaveFaceTexture(Texture2D* texture, const String& fileName)

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,12 +48,6 @@ Constraint2D::Constraint2D(Context* context) :
 
 Constraint2D::~Constraint2D()
 {
-    if (ownerBody_)
-        ownerBody_->RemoveConstraint2D(this);
-
-    if (otherBody_)
-        otherBody_->RemoveConstraint2D(this);
-
     ReleaseJoint();
 }
 
@@ -80,6 +74,12 @@ void Constraint2D::CreateJoint()
     {
         joint_ = physicsWorld_->GetWorld()->CreateJoint(jointDef);
         joint_->SetUserData(this);
+
+        if (ownerBody_)
+            ownerBody_->AddConstraint2D(this);
+
+        if (otherBody_)
+            otherBody_->AddConstraint2D(this);
     }
 }
 
@@ -87,6 +87,12 @@ void Constraint2D::ReleaseJoint()
 {
     if (!joint_)
         return;
+
+    if (ownerBody_)
+        ownerBody_->RemoveConstraint2D(this);
+
+    if (otherBody_)
+        otherBody_->RemoveConstraint2D(this);
 
     if (physicsWorld_)
         physicsWorld_->GetWorld()->DestroyJoint(joint_);

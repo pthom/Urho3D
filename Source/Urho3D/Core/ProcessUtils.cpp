@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -226,7 +226,7 @@ void PrintUnicode(const String& str, bool error)
 
 void PrintUnicodeLine(const String& str, bool error)
 {
-    PrintUnicode(str + '\n', error);
+    PrintUnicode(str + "\n", error);
 }
 
 void PrintLine(const String& str, bool error)

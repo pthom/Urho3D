@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,7 @@
 #include "../UI/LineEdit.h"
 #include "../UI/ListView.h"
 #include "../UI/MessageBox.h"
+#include "../UI/ProgressBar.h"
 #include "../UI/ScrollBar.h"
 #include "../UI/Slider.h"
 #include "../UI/Sprite.h"
@@ -109,7 +110,8 @@ UI::UI(Context* context) :
     nonModalBatchSize_(0),
     dragElementsCount_(0),
     dragConfirmedCount_(0),
-    uiScale_(1.0f)
+    uiScale_(1.0f),
+    customSize_(IntVector2::ZERO)
 {
     rootElement_->SetTraversalMode(TM_DEPTH_FIRST);
     rootModalElement_->SetTraversalMode(TM_DEPTH_FIRST);
@@ -598,6 +600,36 @@ void UI::SetForceAutoHint(bool enable)
     }
 }
 
+void UI::SetScale(float scale)
+{
+    uiScale_ = Max(scale, M_EPSILON);
+    ResizeRootElement();
+}
+
+void UI::SetWidth(float width)
+{
+    IntVector2 size = GetEffectiveRootElementSize(false);
+    SetScale((float)size.x_ / width);
+}
+
+void UI::SetHeight(float height)
+{
+    IntVector2 size = GetEffectiveRootElementSize(false);
+    SetScale((float)size.y_ / height);
+}
+
+void UI::SetCustomSize(const IntVector2& size)
+{
+    customSize_ = IntVector2(Max(0, size.x_), Max(0, size.y_));
+    ResizeRootElement();
+}
+
+void UI::SetCustomSize(int width, int height)
+{
+    customSize_ = IntVector2(Max(0, width), Max(0, height));
+    ResizeRootElement();
+}
+
 IntVector2 UI::GetCursorPosition() const
 {
     return cursor_ ? cursor_->GetPosition() : GetSubsystem<Input>()->GetMousePosition();
@@ -605,8 +637,20 @@ IntVector2 UI::GetCursorPosition() const
 
 UIElement* UI::GetElementAt(const IntVector2& position, bool enabledOnly)
 {
+    IntVector2 positionCopy(position);
+    const IntVector2& rootSize = rootElement_->GetSize();
+
+    // If UI is smaller than the screen, wrap if necessary
+    if (rootSize.x_ > 0 && rootSize.y_ > 0)
+    {
+        if (positionCopy.x_ >= rootSize.x_)
+            positionCopy.x_ %= rootSize.x_;
+        if (positionCopy.y_ >= rootSize.y_)
+            positionCopy.y_ %= rootSize.y_;
+    }
+
     UIElement* result = 0;
-    GetElementAt(result, HasModalElement() ? rootModalElement_ : rootElement_, position, enabledOnly);
+    GetElementAt(result, HasModalElement() ? rootModalElement_ : rootElement_, positionCopy, enabledOnly);
     return result;
 }
 
@@ -703,8 +747,8 @@ void UI::Initialize()
     graphics_ = graphics;
     UIBatch::posAdjust = Vector3(Graphics::GetPixelUVOffset(), 0.0f);
 
-    // Apply initial UI scale to set the root elements size
-    SetScale(uiScale_);
+    // Set initial root element size
+    ResizeRootElement();
 
     vertexBuffer_ = new VertexBuffer(context_);
     debugVertexBuffer_ = new VertexBuffer(context_);
@@ -756,7 +800,11 @@ void UI::Render(bool resetRenderTargets, VertexBuffer* buffer, const PODVector<U
     if (batches.Empty())
         return;
 
-    Vector2 invScreenSize(1.0f / (float)graphics_->GetWidth(), 1.0f / (float)graphics_->GetHeight());
+    if (resetRenderTargets)
+        graphics_->ResetRenderTargets();
+
+    IntVector2 viewSize = graphics_->GetViewport().Size();
+    Vector2 invScreenSize(1.0f / (float)viewSize.x_, 1.0f / (float)viewSize.y_);
     Vector2 scale(2.0f * invScreenSize.x_, -2.0f * invScreenSize.y_);
     Vector2 offset(-1.0f, 1.0f);
 
@@ -776,8 +824,6 @@ void UI::Render(bool resetRenderTargets, VertexBuffer* buffer, const PODVector<U
     graphics_->SetDepthWrite(false);
     graphics_->SetFillMode(FILL_SOLID);
     graphics_->SetStencilTest(false);
-    if (resetRenderTargets)
-        graphics_->ResetRenderTargets();
     graphics_->SetVertexBuffer(buffer);
 
     ShaderVariation* noTextureVS = graphics_->GetShader(VS, "Basic", "VERTEXCOLOR");
@@ -1128,7 +1174,7 @@ void UI::ProcessClickBegin(const IntVector2& cursorPos, int button, int buttons,
 
             // Handle click
             element->OnClickBegin(element->ScreenToElement(cursorPos), cursorPos, button, buttons, qualifiers, cursor);
-            SendClickEvent(E_UIMOUSECLICK, NULL, element, cursorPos, button, buttons, qualifiers);
+            SendClickEvent(E_UIMOUSECLICK, 0, element, cursorPos, button, buttons, qualifiers);
 
             // Fire double click event if element matches and is in time
             if (doubleClickElement_ && element == doubleClickElement_ &&
@@ -1136,7 +1182,7 @@ void UI::ProcessClickBegin(const IntVector2& cursorPos, int button, int buttons,
             {
                 element->OnDoubleClick(element->ScreenToElement(cursorPos), cursorPos, button, buttons, qualifiers, cursor);
                 doubleClickElement_.Reset();
-                SendClickEvent(E_UIMOUSEDOUBLECLICK, NULL, element, cursorPos, button, buttons, qualifiers);
+                SendClickEvent(E_UIMOUSEDOUBLECLICK, 0, element, cursorPos, button, buttons, qualifiers);
             }
             else
             {
@@ -1174,10 +1220,10 @@ void UI::ProcessClickBegin(const IntVector2& cursorPos, int button, int buttons,
             // If clicked over no element, or a disabled element, lose focus (but not if there is a modal element)
             if (!HasModalElement())
                 SetFocusElement(0);
-            SendClickEvent(E_UIMOUSECLICK, NULL, element, cursorPos, button, buttons, qualifiers);
+            SendClickEvent(E_UIMOUSECLICK, 0, element, cursorPos, button, buttons, qualifiers);
 
             if (clickTimer_.GetMSec(true) < (unsigned)(doubleClickInterval_ * 1000) && lastMouseButtons_ == buttons)
-                SendClickEvent(E_UIMOUSEDOUBLECLICK, NULL, element, cursorPos, button, buttons, qualifiers);
+                SendClickEvent(E_UIMOUSEDOUBLECLICK, 0, element, cursorPos, button, buttons, qualifiers);
         }
 
         lastMouseButtons_ = buttons;
@@ -1396,10 +1442,7 @@ void UI::HandleScreenMode(StringHash eventType, VariantMap& eventData)
     if (!initialized_)
         Initialize();
     else
-    {
-        // Reapply UI scale to resize the root elements
-        SetScale(uiScale_);
-    }
+        ResizeRootElement();
 }
 
 void UI::HandleMouseButtonDown(StringHash eventType, VariantMap& eventData)
@@ -1680,12 +1723,9 @@ void UI::HandleTextInput(StringHash eventType, VariantMap& eventData)
 {
     using namespace TextInput;
 
-    mouseButtons_ = eventData[P_BUTTONS].GetInt();
-    qualifiers_ = eventData[P_QUALIFIERS].GetInt();
-
     UIElement* element = focusElement_;
     if (element)
-        element->OnTextInput(eventData[P_TEXT].GetString(), mouseButtons_, qualifiers_);
+        element->OnTextInput(eventData[P_TEXT].GetString());
 }
 
 void UI::HandleBeginFrame(StringHash eventType, VariantMap& eventData)
@@ -1812,30 +1852,27 @@ IntVector2 UI::SumTouchPositions(UI::DragData* dragData, const IntVector2& oldSe
     return sendPos;
 }
 
-void UI::SetScale(float scale)
+void UI::ResizeRootElement()
 {
-    uiScale_ = Max(scale, M_EPSILON);
-    Graphics* graphics = GetSubsystem<Graphics>();
-    if (graphics)
+    IntVector2 effectiveSize = GetEffectiveRootElementSize();
+    rootElement_->SetSize(effectiveSize);
+    rootModalElement_->SetSize(effectiveSize);
+}
+
+IntVector2 UI::GetEffectiveRootElementSize(bool applyScale) const
+{
+    // Use a fake size in headless mode
+    IntVector2 size = graphics_ ? IntVector2(graphics_->GetWidth(), graphics_->GetHeight()) : IntVector2(1024, 768);
+    if (customSize_.x_ > 0 && customSize_.y_ > 0)
+        size = customSize_;
+
+    if (applyScale)
     {
-        rootElement_->SetSize((int)((float)graphics->GetWidth() / uiScale_ + 0.5f), (int)((float)graphics_->GetHeight() /
-            uiScale_ + 0.5));
-        rootModalElement_->SetSize(rootElement_->GetSize());
+        size.x_ = (int)((float)size.x_ / uiScale_ + 0.5f);
+        size.y_ = (int)((float)size.y_ / uiScale_ + 0.5f);
     }
-}
 
-void UI::SetWidth(float size)
-{
-    Graphics* graphics = GetSubsystem<Graphics>();
-    if (graphics)
-        SetScale((float)graphics->GetWidth() / size);
-}
-
-void UI::SetHeight(float size)
-{
-    Graphics* graphics = GetSubsystem<Graphics>();
-    if (graphics)
-        SetScale((float)graphics->GetHeight() / size);
+    return size;
 }
 
 void RegisterUILibrary(Context* context)
@@ -1861,6 +1898,7 @@ void RegisterUILibrary(Context* context)
     DropDownList::RegisterObject(context);
     FileSelector::RegisterObject(context);
     MessageBox::RegisterObject(context);
+    ProgressBar::RegisterObject(context);
     ToolTip::RegisterObject(context);
 }
 

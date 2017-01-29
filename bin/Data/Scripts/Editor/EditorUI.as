@@ -72,6 +72,8 @@ void CreateUI()
     uiStyle = GetEditorUIXMLFile("UI/DefaultStyle.xml");
     ui.root.defaultStyle = uiStyle;
     iconStyle = GetEditorUIXMLFile("UI/EditorIcons.xml");
+    
+    graphics.windowIcon = cache.GetResource("Image", "Textures/UrhoIcon.png");
 
     CreateCursor();
     CreateMenuBar();
@@ -536,11 +538,6 @@ void CreateMenuBar()
     BorderImage@ spacer = BorderImage("MenuBarSpacer");
     uiMenuBar.AddChild(spacer);
     spacer.style = "EditorMenuBar";
-
-    BorderImage@ logo = BorderImage("Logo");
-    logo.texture = cache.GetResource("Texture2D", "Textures/Logo.png");
-    logo.SetFixedWidth(64);
-    uiMenuBar.AddChild(logo);
 }
 
 bool Exit()
@@ -1174,6 +1171,7 @@ void HandleOpenSceneFile(StringHash eventType, VariantMap& eventData)
 {
     CloseFileSelector(uiSceneFilter, uiScenePath);
     LoadScene(ExtractFileName(eventData));
+    SendEvent(EDITOR_EVENT_SCENE_LOADED);
 }
 
 void HandleSaveSceneFile(StringHash eventType, VariantMap& eventData)
@@ -1245,7 +1243,13 @@ void ExecuteScript(const String&in fileName)
 void HandleRunScript(StringHash eventType, VariantMap& eventData)
 {
     CloseFileSelector(uiScriptFilter, uiScriptPath);
+
+    suppressSceneChanges = true;
     ExecuteScript(ExtractFileName(eventData));
+    suppressSceneChanges = false;
+
+    UpdateHierarchyItem(editorScene, true);
+    UpdateHierarchyItem(editorUIElement, true);
 }
 
 void HandleResourcePath(StringHash eventType, VariantMap& eventData)
@@ -1326,6 +1330,8 @@ void HandleHotKeysBlender( VariantMap& eventData)
         TogglePhysicsDebug();
     else if (key == KEY_F4)
         ToggleOctreeDebug();
+    else if (key == KEY_F5)
+        ToggleNavigationDebug();
     else if (key == KEY_F11)
     {
         Image@ screenshot = Image();
@@ -1517,6 +1523,8 @@ void HandleHotKeysStandard(VariantMap& eventData)
         TogglePhysicsDebug();
     else if (key == KEY_F4)
         ToggleOctreeDebug();
+    else if (key == KEY_F5)
+        ToggleNavigationDebug();
     else if (key == KEY_F11)
     {
         Image@ screenshot = Image();

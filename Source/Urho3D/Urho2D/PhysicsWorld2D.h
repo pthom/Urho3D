@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -86,13 +86,13 @@ public:
     /// Visualize the component as debug geometry.
     virtual void DrawDebugGeometry(DebugRenderer* debug, bool depthTest);
 
-    // Implement b2ContactListener.
+    // Implement b2ContactListener
     /// Called when two fixtures begin to touch.
     virtual void BeginContact(b2Contact* contact);
     /// Called when two fixtures cease to touch.
     virtual void EndContact(b2Contact* contact);
 
-    // Implement b2Draw.
+    // Implement b2Draw
     /// Draw a closed polygon provided in CCW order.
     virtual void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
     /// Draw a solid closed polygon provided in CCW order.
@@ -197,7 +197,7 @@ public:
     int GetPositionIterations() const { return positionIterations_; }
 
     /// Return the Box2D physics world.
-    b2World* GetWorld() { return world_; }
+    b2World* GetWorld() { return world_.Get(); }
 
     /// Set node dirtying to be disregarded.
     void SetApplyingTransforms(bool enable) { applyingTransforms_ = enable; }
@@ -218,7 +218,7 @@ private:
     void SendEndContactEvents();
 
     /// Box2D physics world.
-    b2World* world_;
+    UniquePtr<b2World> world_;
     /// Gravity.
     Vector2 gravity_;
     /// Velocity iterations.
@@ -262,6 +262,8 @@ private:
         SharedPtr<Node> nodeA_;
         /// Node B.
         SharedPtr<Node> nodeB_;
+        /// Box2D contact.
+        b2Contact* contact_;
     };
     /// Begin contact infos.
     Vector<ContactInfo> beginContactInfos_;

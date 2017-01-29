@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 
 #ifdef IOS
 #include "../Graphics/Graphics.h"
-#include "../Graphics/GraphicsImpl.h"
 #include <SDL/SDL.h>
 #endif
 
@@ -92,7 +91,7 @@ int Application::Run()
         // support calling the Stop() function, as the application will never stop manually
 #else
 #if defined(IOS)
-        SDL_iPhoneSetAnimationCallback(GetSubsystem<Graphics>()->GetImpl()->GetWindow(), 1, &RunFrame, engine_);
+        SDL_iPhoneSetAnimationCallback(GetSubsystem<Graphics>()->GetWindow(), 1, &RunFrame, engine_);
 #elif defined(__EMSCRIPTEN__)
         emscripten_set_main_loop_arg(RunFrame, engine_, 0, 1);
 #endif

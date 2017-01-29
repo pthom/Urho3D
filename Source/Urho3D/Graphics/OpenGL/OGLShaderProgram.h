@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,30 +26,13 @@
 #include "../../Container/RefCounted.h"
 #include "../../Graphics/GPUObject.h"
 #include "../../Graphics/GraphicsDefs.h"
+#include "../../Graphics/ShaderVariation.h"
 
 namespace Urho3D
 {
 
 class ConstantBuffer;
 class Graphics;
-class ShaderVariation;
-
-/// %Shader parameter definition.
-struct ShaderParameter
-{
-    /// Construct with defaults.
-    ShaderParameter() :
-        bufferPtr_(0)
-    {
-    }
-
-    /// Uniform location or byte offset in constant buffer.
-    int location_;
-    /// Element type.
-    unsigned type_;
-    /// Constant buffer pointer.
-    ConstantBuffer* bufferPtr_;
-};
 
 /// Linked shader program on the GPU.
 class URHO3D_API ShaderProgram : public RefCounted, public GPUObject

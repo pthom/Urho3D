@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,57 @@
 #include "../Precompiled.h"
 
 #include "../Core/Context.h"
-#include "../Core/Thread.h"
+#include "../Core/EventProfiler.h"
 #include "../IO/Log.h"
 
 #include "../DebugNew.h"
 
 namespace Urho3D
 {
+
+void EventReceiverGroup::BeginSendEvent()
+{
+    ++inSend_;
+}
+
+void EventReceiverGroup::EndSendEvent()
+{
+    assert(inSend_ > 0);
+    --inSend_;
+
+    if (inSend_ == 0 && dirty_)
+    {
+        /// \todo Could be optimized by erase-swap, but this keeps the receiver order
+        for (unsigned i = receivers_.Size() - 1; i < receivers_.Size(); --i)
+        {
+            if (!receivers_[i])
+                receivers_.Erase(i);
+        }
+
+        dirty_ = false;
+    }
+}
+
+void EventReceiverGroup::Add(Object* object)
+{
+    if (object)
+        receivers_.Push(object);
+}
+
+void EventReceiverGroup::Remove(Object* object)
+{
+    if (inSend_ > 0)
+    {
+        PODVector<Object*>::Iterator i = receivers_.Find(object);
+        if (i != receivers_.End())
+        {
+            (*i) = 0;
+            dirty_ = true;
+        }
+    }
+    else
+        receivers_.Remove(object);
+}
 
 void RemoveNamedAttribute(HashMap<StringHash, Vector<AttributeInfo> >& attributes, StringHash objectType, const char* name)
 {
@@ -243,23 +287,33 @@ AttributeInfo* Context::GetAttribute(StringHash objectType, const char* name)
 
 void Context::AddEventReceiver(Object* receiver, StringHash eventType)
 {
-    eventReceivers_[eventType].Insert(receiver);
+    SharedPtr<EventReceiverGroup>& group = eventReceivers_[eventType];
+    if (!group)
+        group = new EventReceiverGroup();
+    group->Add(receiver);
 }
 
 void Context::AddEventReceiver(Object* receiver, Object* sender, StringHash eventType)
 {
-    specificEventReceivers_[sender][eventType].Insert(receiver);
+    SharedPtr<EventReceiverGroup>& group = specificEventReceivers_[sender][eventType];
+    if (!group)
+        group = new EventReceiverGroup();
+    group->Add(receiver);
 }
 
 void Context::RemoveEventSender(Object* sender)
 {
-    HashMap<Object*, HashMap<StringHash, HashSet<Object*> > >::Iterator i = specificEventReceivers_.Find(sender);
+    HashMap<Object*, HashMap<StringHash, SharedPtr<EventReceiverGroup> > >::Iterator i = specificEventReceivers_.Find(sender);
     if (i != specificEventReceivers_.End())
     {
-        for (HashMap<StringHash, HashSet<Object*> >::Iterator j = i->second_.Begin(); j != i->second_.End(); ++j)
+        for (HashMap<StringHash, SharedPtr<EventReceiverGroup> >::Iterator j = i->second_.Begin(); j != i->second_.End(); ++j)
         {
-            for (HashSet<Object*>::Iterator k = j->second_.Begin(); k != j->second_.End(); ++k)
-                (*k)->RemoveEventSender(sender);
+            for (PODVector<Object*>::Iterator k = j->second_->receivers_.Begin(); k != j->second_->receivers_.End(); ++k)
+            {
+                Object* receiver = *k;
+                if (receiver)
+                    receiver->RemoveEventSender(sender);
+            }
         }
         specificEventReceivers_.Erase(i);
     }
@@ -267,16 +321,44 @@ void Context::RemoveEventSender(Object* sender)
 
 void Context::RemoveEventReceiver(Object* receiver, StringHash eventType)
 {
-    HashSet<Object*>* group = GetEventReceivers(eventType);
+    EventReceiverGroup* group = GetEventReceivers(eventType);
     if (group)
-        group->Erase(receiver);
+        group->Remove(receiver);
 }
 
 void Context::RemoveEventReceiver(Object* receiver, Object* sender, StringHash eventType)
 {
-    HashSet<Object*>* group = GetEventReceivers(sender, eventType);
+    EventReceiverGroup* group = GetEventReceivers(sender, eventType);
     if (group)
-        group->Erase(receiver);
+        group->Remove(receiver);
+}
+
+void Context::BeginSendEvent(Object* sender, StringHash eventType)
+{
+#ifdef URHO3D_PROFILING
+    if (EventProfiler::IsActive())
+    {
+        EventProfiler* eventProfiler = GetSubsystem<EventProfiler>();
+        if (eventProfiler)
+            eventProfiler->BeginBlock(eventType);
+    }
+#endif
+
+    eventSenders_.Push(sender);
+}
+
+void Context::EndSendEvent()
+{
+    eventSenders_.Pop();
+
+#ifdef URHO3D_PROFILING
+    if (EventProfiler::IsActive())
+    {
+        EventProfiler* eventProfiler = GetSubsystem<EventProfiler>();
+        if (eventProfiler)
+            eventProfiler->EndBlock();
+    }
+#endif
 }
 
 }

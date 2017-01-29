@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -228,10 +228,10 @@ void L10n::HandleChangeLanguage(StringHash eventType, VariantMap& eventData)
     Localization* l10n = GetSubsystem<Localization>();
     UIElement* uiRoot = GetSubsystem<UI>()->GetRoot();
 
-    Text* windowTitle = static_cast<Text*>(uiRoot->GetChild("WindowTitle", true));
+    Text* windowTitle = uiRoot->GetChildStaticCast<Text>("WindowTitle", true);
     windowTitle->SetText(l10n->Get("title") + " (" + String(l10n->GetLanguageIndex()) + " " + l10n->GetLanguage() + ")");
 
-    Text* buttonText = static_cast<Text*>(uiRoot->GetChild("ButtonTextQuit", true));
+    Text* buttonText = uiRoot->GetChildStaticCast<Text>("ButtonTextQuit", true);
     buttonText->SetText(l10n->Get("quit"));
 
     Text3D* text3D = scene_->GetChild("Text3D")->GetComponent<Text3D>();

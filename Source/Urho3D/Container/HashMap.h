@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -262,8 +262,12 @@ public:
     /// Assign a hash map.
     HashMap& operator =(const HashMap<T, U>& rhs)
     {
-        Clear();
-        Insert(rhs);
+        // In case of self-assignment do nothing
+        if (&rhs != this)
+        {
+            Clear();
+            Insert(rhs);
+        }
         return *this;
     }
 
@@ -555,7 +559,7 @@ public:
     }
 
     /// Try to copy value to output. Return true if was found.
-    bool TryGetValue(const T& key, U& out)
+    bool TryGetValue(const T& key, U& out) const
     {
         if (!ptrs_)
             return false;
@@ -602,11 +606,11 @@ public:
     /// Return iterator to the end.
     ConstIterator End() const { return ConstIterator(Tail()); }
 
-    /// Return first key.
-    const T& Front() const { return *Begin(); }
+    /// Return first pair.
+    const KeyValue& Front() const { return *Begin(); }
 
-    /// Return last key.
-    const T& Back() const { return *(--End()); }
+    /// Return last pair.
+    const KeyValue& Back() const { return *(--End()); }
 
 private:
     /// Return the head node.

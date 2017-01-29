@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -104,6 +104,24 @@ XMLElement XMLElement::CreateChild(const char* name)
     const pugi::xml_node& node = xpathNode_ ? xpathNode_->node() : pugi::xml_node(node_);
     pugi::xml_node child = const_cast<pugi::xml_node&>(node).append_child(name);
     return XMLElement(file_, child.internal_object());
+}
+
+XMLElement XMLElement::GetOrCreateChild(const String& name)
+{
+    XMLElement child = GetChild(name);
+    if (child.NotNull())
+        return child;
+    else
+        return CreateChild(name);
+}
+
+XMLElement XMLElement::GetOrCreateChild(const char* name)
+{
+    XMLElement child = GetChild(name);
+    if (child.NotNull())
+        return child;
+    else
+        return CreateChild(name);
 }
 
 bool XMLElement::RemoveChild(const XMLElement& element)
@@ -990,32 +1008,23 @@ bool XPathResultSet::Empty() const
     return resultSet_ ? resultSet_->empty() : true;
 }
 
-XPathQuery::XPathQuery() :
-    query_(0),
-    variables_(0)
+XPathQuery::XPathQuery()
 {
 }
 
-XPathQuery::XPathQuery(const String& queryString, const String& variableString) :
-    query_(0),
-    variables_(0)
+XPathQuery::XPathQuery(const String& queryString, const String& variableString)
 {
     SetQuery(queryString, variableString);
 }
 
 XPathQuery::~XPathQuery()
 {
-    delete variables_;
-    variables_ = 0;
-    delete query_;
-    query_ = 0;
 }
 
 void XPathQuery::Bind()
 {
     // Delete previous query object and create a new one binding it with variable set
-    delete query_;
-    query_ = new pugi::xpath_query(queryString_.CString(), variables_);
+    query_ = new pugi::xpath_query(queryString_.CString(), variables_.Get());
 }
 
 bool XPathQuery::SetVariable(const String& name, bool value)
@@ -1100,10 +1109,8 @@ void XPathQuery::Clear()
 {
     queryString_.Clear();
 
-    delete variables_;
-    variables_ = 0;
-    delete query_;
-    query_ = 0;
+    variables_.Reset();
+    query_.Reset();
 }
 
 bool XPathQuery::EvaluateToBool(XMLElement element) const

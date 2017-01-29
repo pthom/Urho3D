@@ -22,7 +22,7 @@
 # Modified by Yao Wei Tjong for Urho3D, the modified portion is licensed under below license
 
 #
-# Copyright (c) 2008-2016 the Urho3D project.
+# Copyright (c) 2008-2017 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -355,7 +355,8 @@ endmacro()
 # - HAVE_DLOPEN opt
 macro(CheckX11)
   if(VIDEO_X11)
-    # Urho3D - no fix required - all these checks below work on native Linux build only, e.g. they would not work on RPI (native or X-compile) which is fortunately a good thing
+    # Urho3D - bug fix - in order to make these checks below work on both native and cross-compiling builds we need to add the '-shared' compiler flags to ensure the linker does not attempt to statically link against X11 shared libs which would otherwise fail the test when in cross-compiling mode
+    set(CMAKE_REQUIRED_FLAGS "-fPIC -shared ${ORIG_CMAKE_REQUIRED_FLAGS}")
     foreach (NAME X11 Xext Xcursor Xinerama Xi Xrandr Xrender Xss Xxf86vm)
       string (TOUPPER ${NAME} UPCASE_NAME)
       string (REGEX REPLACE \\..+$ "" UPCASE_NAME "${UPCASE_NAME}")  # Stringify for string replacement
@@ -364,21 +365,27 @@ macro(CheckX11)
     endforeach ()
 
     # Urho3D - commented out setting of X_CFLAGS based on the search result for X11/Xlib.h using the default search path (if it is found then it is in default path anyway so no point to add it into compiler header search path again)
+    # Urho3D - add check for Xdbe extension
 
     check_include_file(X11/Xcursor/Xcursor.h HAVE_XCURSOR_H)
     check_include_file(X11/extensions/Xinerama.h HAVE_XINERAMA_H)
     check_include_file(X11/extensions/XInput2.h HAVE_XINPUT_H)
     check_include_file(X11/extensions/Xrandr.h HAVE_XRANDR_H)
     check_include_file(X11/extensions/Xrender.h HAVE_XRENDER_H)
-    check_include_file(X11/extensions/scrnsaver.h HAVE_XSS_H)
     check_include_file(X11/extensions/shape.h HAVE_XSHAPE_H)
-    check_include_files("X11/Xlib.h;X11/extensions/xf86vmode.h" HAVE_XF86VM_H)
+    check_include_file(X11/extensions/scrnsaver.h HAVE_XSS_H)
+    check_include_files("X11/Xlib.h;X11/Xproto.h;X11/extensions/Xdbe.h" HAVE_XDBE_H)
     check_include_files("X11/Xlib.h;X11/Xproto.h;X11/extensions/Xext.h" HAVE_XEXT_H)
+    check_include_files("X11/Xlib.h;X11/extensions/xf86vmode.h" HAVE_XF86VM_H)
 
     if(X11_LIB)
       if(NOT HAVE_XEXT_H)
         message_error("Missing Xext.h, maybe you need to install the libxext-dev package?")
       endif()
+
+      if (HAVE_XDBE_H)
+        set(SDL_VIDEO_DRIVER_X11_XDBE 1)
+      endif ()
 
       set(HAVE_VIDEO_X11 TRUE)
       set(HAVE_SDL_VIDEO TRUE)
@@ -532,6 +539,7 @@ macro(CheckX11)
       endif()
 
       set(CMAKE_REQUIRED_LIBRARIES)
+      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
   endif()
 endmacro()
@@ -553,6 +561,7 @@ macro(CheckMir)
             file(GLOB MIR_SOURCES ${SDL2_SOURCE_DIR}/src/video/mir/*.c)
             set(SOURCE_FILES ${SOURCE_FILES} ${MIR_SOURCES})
             set(SDL_VIDEO_DRIVER_MIR 1)
+            set(SDL_VIDEO_OPENGL_EGL 1)
 
             if(MIR_SHARED)
                 if(NOT HAVE_DLOPEN)
@@ -571,6 +580,27 @@ macro(CheckMir)
     endif()
 endmacro()
 
+macro(WaylandProtocolGen _SCANNER _XML _PROTL)
+    set(_WAYLAND_PROT_C_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-protocol.c")
+    set(_WAYLAND_PROT_H_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-client-protocol.h")
+
+    add_custom_command(
+        OUTPUT "${_WAYLAND_PROT_H_CODE}"
+        DEPENDS "${_XML}"
+        COMMAND "${_SCANNER}"
+        ARGS client-header "${_XML}" "${_WAYLAND_PROT_H_CODE}"
+    )
+
+    add_custom_command(
+        OUTPUT "${_WAYLAND_PROT_C_CODE}"
+        DEPENDS "${_WAYLAND_PROT_H_CODE}"
+        COMMAND "${_SCANNER}"
+        ARGS code "${_XML}" "${_WAYLAND_PROT_C_CODE}"
+    )
+
+    set(SOURCE_FILES ${SOURCE_FILES} "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-protocol.c")
+endmacro()
+
 # Requires:
 # - EGL
 # Optional:
@@ -587,6 +617,17 @@ macro(CheckWayland)
 
       file(GLOB WAYLAND_SOURCES ${SDL2_SOURCE_DIR}/src/video/wayland/*.c)
       set(SOURCE_FILES ${SOURCE_FILES} ${WAYLAND_SOURCES})
+
+      # We have to generate some protocol interface code for some unstable Wayland features.
+      file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols")
+      include_directories("${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols")
+
+      WaylandProtocolGen("${WAYLAND_SCANNER}" "${WAYLAND_CORE_PROTOCOL_DIR}/wayland.xml" "wayland")
+
+      foreach(_PROTL relative-pointer-unstable-v1 pointer-constraints-unstable-v1)
+        string(REGEX REPLACE "\\-unstable\\-.*$" "" PROTSUBDIR ${_PROTL})
+        WaylandProtocolGen("${WAYLAND_SCANNER}" "${WAYLAND_PROTOCOLS_DIR}/unstable/${PROTSUBDIR}/${_PROTL}.xml" "${_PROTL}")
+      endforeach()
 
       if(VIDEO_WAYLAND_QT_TOUCH)
           set(SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1)
@@ -611,6 +652,7 @@ macro(CheckWayland)
       endif()
 
       set(SDL_VIDEO_DRIVER_WAYLAND 1)
+      set(SDL_VIDEO_OPENGL_EGL 1)
     endif()
   endif()
 endmacro()
@@ -655,7 +697,7 @@ macro(CheckVivante)
   if(VIDEO_VIVANTE)
     # Urho3D - bug fix - when cross-compiling the headers are rooted, either use "--sysroot" compiler flag or use CMAKE_REQUIRED_INCLUDES (e.g. on RPI) to cater for it
     set (CMAKE_REQUIRED_INCLUDES_VIVANTE_SAVED ${CMAKE_REQUIRED_INCLUDES})
-    if (CMAKE_CROSSCOMPILING AND NOT "${CMAKE_C_FLAGS} ${CMAKE_REQUIRED_FLAGS}" MATCHES sysroot)
+    if (CMAKE_CROSSCOMPILING AND NOT "${CMAKE_C_FLAGS} ${CMAKE_REQUIRED_FLAGS}" MATCHES --sysroot)
       find_path (VIVANTE_INCLUDE_DIRS NAMES gc_vdk.h EGL/eglvivante.h)
       if (VIVANTE_INCLUDE_DIRS)
         # Assume the header search path has not been adjusted elsewhere yet, there is no harm anyway when a same entry is added twice into the list
@@ -719,7 +761,6 @@ macro(CheckOpenGL)
         set(SDL_VIDEO_OPENGL_GLX 1)
       endif ()
       set(SDL_VIDEO_RENDER_OGL 1)
-      list(APPEND EXTRA_LIBS GL)
     endif()
     set (CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
   endif()

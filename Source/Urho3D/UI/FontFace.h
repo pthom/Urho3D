@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ class Image;
 class Texture2D;
 
 /// %Font glyph description.
-struct FontGlyph
+struct URHO3D_API FontGlyph
 {
     /// Construct.
     FontGlyph();

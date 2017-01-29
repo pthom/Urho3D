@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -184,6 +184,22 @@ URHO3D_EVENT(E_COMPONENTENABLEDCHANGED, ComponentEnabledChanged)
 URHO3D_EVENT(E_TEMPORARYCHANGED, TemporaryChanged)
 {
     URHO3D_PARAM(P_SERIALIZABLE, Serializable);    // Serializable pointer
+}
+
+/// A node (and its children and components) has been cloned.
+URHO3D_EVENT(E_NODECLONED, NodeCloned)
+{
+    URHO3D_PARAM(P_SCENE, Scene);                  // Scene pointer
+    URHO3D_PARAM(P_NODE, Node);                    // Node pointer
+    URHO3D_PARAM(P_CLONENODE, CloneNode);          // Node pointer
+}
+
+/// A component has been cloned.
+URHO3D_EVENT(E_COMPONENTCLONED, ComponentCloned)
+{
+    URHO3D_PARAM(P_SCENE, Scene);                  // Scene pointer
+    URHO3D_PARAM(P_COMPONENT, Component);          // Component pointer
+    URHO3D_PARAM(P_CLONECOMPONENT, CloneComponent); // Component pointer
 }
 
 /// A network attribute update from the server has been intercepted.

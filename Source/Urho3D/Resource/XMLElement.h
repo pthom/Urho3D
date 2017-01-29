@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -66,6 +66,10 @@ public:
     XMLElement CreateChild(const String& name);
     /// Create a child element.
     XMLElement CreateChild(const char* name);
+    /// Return the first child element with name or create if does not exist.
+    XMLElement GetOrCreateChild(const String& name);
+    /// Return the first child element with name or create if does not exist.
+    XMLElement GetOrCreateChild(const char* name);
     /// Remove a child element. Return true if successful.
     bool RemoveChild(const XMLElement& element);
     /// Remove a child element by name. Return true if successful.
@@ -303,7 +307,7 @@ public:
     XPathResultSet();
     /// Construct with result set from XPath query.
     XPathResultSet(XMLFile* file, pugi::xpath_node_set* resultSet);
-    // Copy-construct.
+    /// Copy-construct.
     XPathResultSet(const XPathResultSet& rhs);
     /// Destruct.
     ~XPathResultSet();
@@ -370,18 +374,18 @@ public:
     String GetQuery() const { return queryString_; }
 
     /// Return pugixml xpath_query.
-    pugi::xpath_query* GetXPathQuery() const { return query_; }
+    pugi::xpath_query* GetXPathQuery() const { return query_.Get(); }
 
     /// Return pugixml xpath_variable_set.
-    pugi::xpath_variable_set* GetXPathVariableSet() const { return variables_; }
+    pugi::xpath_variable_set* GetXPathVariableSet() const { return variables_.Get(); }
 
 private:
     /// XPath query string.
     String queryString_;
     /// Pugixml xpath_query.
-    pugi::xpath_query* query_;
+    UniquePtr<pugi::xpath_query> query_;
     /// Pugixml xpath_variable_set.
-    pugi::xpath_variable_set* variables_;
+    UniquePtr<pugi::xpath_variable_set> variables_;
 };
 
 }

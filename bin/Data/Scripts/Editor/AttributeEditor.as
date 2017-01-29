@@ -281,7 +281,7 @@ UIElement@ CreateNumAttributeEditor(ListView@ list, Array<Serializable@>@ serial
         numCoords = 2;
     if (type == VAR_VECTOR3 || type == VAR_QUATERNION)
         numCoords = 3;
-    else if (type == VAR_VECTOR4 || type == VAR_COLOR || type == VAR_INTRECT)
+    else if (type == VAR_VECTOR4 || type == VAR_COLOR || type == VAR_INTRECT || type == VAR_RECT)
         numCoords = 4;
 
     for (uint i = 0; i < numCoords; ++i)
@@ -435,7 +435,7 @@ UIElement@ CreateAttributeEditor(ListView@ list, Array<Serializable@>@ serializa
         parent = CreateStringAttributeEditor(list, serializables, info, index, subIndex);
     else if (type == VAR_BOOL)
         parent = CreateBoolAttributeEditor(list, serializables, info, index, subIndex);
-    else if ((type >= VAR_FLOAT && type <= VAR_VECTOR4) || type == VAR_QUATERNION || type == VAR_COLOR || type == VAR_INTVECTOR2 || type == VAR_INTRECT || type == VAR_DOUBLE)
+    else if ((type >= VAR_FLOAT && type <= VAR_VECTOR4) || type == VAR_QUATERNION || type == VAR_COLOR || type == VAR_INTVECTOR2 || type == VAR_INTRECT || type == VAR_DOUBLE || type == VAR_RECT)
         parent = CreateNumAttributeEditor(list, serializables, info, index, subIndex);
     else if (type == VAR_INT)
         parent = CreateIntAttributeEditor(list, serializables, info, index, subIndex);
@@ -509,6 +509,11 @@ UIElement@ CreateAttributeEditor(ListView@ list, Array<Serializable@>@ serializa
                     break;
                 }
                 nameIndex = vectorStruct.restartIndex;
+
+                // Create small divider for repeated instances
+                UIElement@ divider = UIElement();
+                divider.SetFixedHeight(8);
+                list.AddItem(divider);
             }
         }
     }
@@ -860,7 +865,7 @@ void FillValue(Array<Variant>& values, const Variant&in value)
 
 void SanitizeNumericalValue(VariantType type, String& value)
 {
-    if (type >= VAR_FLOAT && type <= VAR_COLOR)
+    if ((type >= VAR_FLOAT && type <= VAR_COLOR) || type == VAR_RECT)
         value = String(value.ToFloat());
     else if (type == VAR_INT || type == VAR_INTRECT || type == VAR_INTVECTOR2)
         value = String(value.ToInt());
@@ -1491,70 +1496,32 @@ Array<VectorStruct@> vectorStructs;
 
 void InitVectorStructs()
 {
-    // Fill vector structure data
-    Array<String> billboardVariables = {
-        "Billboard Count",
-        "   Position",
-        "   Size",
-        "   UV Coordinates",
-        "   Color",
-        "   Rotation",
-        "   Direction",
-        "   Is Enabled"
-    };
-    vectorStructs.Push(VectorStruct("BillboardSet", "Billboards", billboardVariables, 1));
-
-    Array<String> animationStateVariables = {
-        "Anim State Count",
-        "   Animation",
-        "   Start Bone",
-        "   Is Looped",
-        "   Weight",
-        "   Time",
-        "   Layer"
-    };
-    vectorStructs.Push(VectorStruct("AnimatedModel", "Animation States", animationStateVariables, 1));
-
-    Array<String> staticModelGroupInstanceVariables = {
-        "Instance Count",
-        "   NodeID"
-    };
-    vectorStructs.Push(VectorStruct("StaticModelGroup", "Instance Nodes", staticModelGroupInstanceVariables, 1));
-
-    Array<String> splinePathInstanceVariables = {
-        "Control Point Count",
-        "   NodeID"
-    };
-    vectorStructs.Push(VectorStruct("SplinePath", "Control Points", splinePathInstanceVariables, 1));
-
-    Array<String> crowdManagerFilterTypeVariables = {
-        "Query Filter Type Count",
-        "   Include Flags",
-        "   Exclude Flags",
-        "   >AreaCost"
-    };
-    vectorStructs.Push(VectorStruct("CrowdManager", "Filter Types", crowdManagerFilterTypeVariables, 1));
-
     Array<String> crowdManagerAreaCostVariables = {
         "   Area Count",
         "      Cost"
     };
     vectorStructs.Push(VectorStruct("CrowdManager", "   >AreaCost", crowdManagerAreaCostVariables, 1));
+    
+    Array<String> categories = GetObjectCategories();
+    for (uint categoryIndex = 0; categoryIndex < categories.length; categoryIndex++)
+    {
+        Array<String> objectsNames = GetObjectsByCategory(categories[categoryIndex]);
+        for (uint objectIndex = 0; objectIndex < objectsNames.length; objectIndex++)
+        {
+            String objectName = objectsNames[objectIndex];
+            Array<AttributeInfo> attributes = GetObjectAttributeInfos(objectName);
 
-    Array<String> crowdManagerObstacleAvoidanceTypeVariables = {
-        "Obstacle Avoid. Type Count",
-        "   Velocity Bias",
-        "   Desired Velocity Weight",
-        "   Current Velocity Weight",
-        "   Side Bias Weight",
-        "   Time of Impact Weight",
-        "   Time Horizon",
-        "   Grid Size",
-        "   Adaptive Divs",
-        "   Adaptive Rings",
-        "   Adaptive Depth"
-    };
-    vectorStructs.Push(VectorStruct("CrowdManager", "Obstacle Avoidance Types", crowdManagerObstacleAvoidanceTypeVariables, 1));
+            for (uint attributeIndex = 0; attributeIndex < attributes.length; attributeIndex++)
+            {
+                AttributeInfo attribute = attributes[attributeIndex];
+                if (attribute.type == VAR_VARIANTVECTOR and attribute.variantStructureElementNames.length > 0)
+                {
+                    Array<String> elementsNames = attribute.variantStructureElementNames;
+                    vectorStructs.Push(VectorStruct(objectName, attribute.name, elementsNames, 1));
+                }
+            }
+        }
+    }
 }
 
 VectorStruct@ GetVectorStruct(Array<Serializable@>@ serializables, uint index)

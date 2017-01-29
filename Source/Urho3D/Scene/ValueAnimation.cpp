@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -328,6 +328,9 @@ void ValueAnimation::SetEventFrame(float time, const StringHash& eventType, cons
             }
         }
     }
+
+    beginTime_ = Min(time, beginTime_);
+    endTime_ = Max(time, endTime_);
 }
 
 bool ValueAnimation::IsValid() const
@@ -527,7 +530,7 @@ Variant ValueAnimation::SubstractAndMultiply(const Variant& value1, const Varian
         return (value1.GetDouble() - value2.GetDouble()) * t;
 
     default:
-        URHO3D_LOGERROR("Invalid value type for spline interpolation's substract and multiply operation");
+        URHO3D_LOGERROR("Invalid value type for spline interpolation's subtract and multiply operation");
         return Variant::EMPTY;
     }
 }

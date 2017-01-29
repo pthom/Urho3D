@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2016 the Urho3D project.
+# Copyright (c) 2008-2017 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ if (ARM)
         set (ASM_FILES source/as_callfunc_arm_xcode.S)
     else ()
         set (ASM_FILES source/as_callfunc_arm_gcc.S)
+        set (CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${ARM_CFLAGS}")
     endif ()
 elseif (MSVC AND URHO3D_64BIT)
     enable_language (ASM_MASM)

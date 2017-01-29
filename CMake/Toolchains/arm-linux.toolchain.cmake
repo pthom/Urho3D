@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2016 the Urho3D project.
+# Copyright (c) 2008-2017 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+
+if (DEFINED CMAKE_CROSSCOMPILING)
+    return ()
+endif ()
 
 if (CMAKE_TOOLCHAIN_FILE)
     # Reference toolchain variable to suppress "unused variable" warning
@@ -83,8 +87,8 @@ if (NOT ARM_SYSROOT)
         message (FATAL_ERROR "Could not find ARM system root. "
             "Use ARM_SYSROOT environment variable or build option to specify the location of system root.")
     endif ()
-    set (ARM_PREFIX ${ARM_PREFIX} CACHE STRING "Prefix path to ARM cross-compiler tools (Linux on ARM cross-compiling build only)" FORCE)
-    set (ARM_SYSROOT ${ARM_SYSROOT} CACHE PATH "Path to ARM system root (Linux on ARM cross-compiling build only)" FORCE)
+    set (ARM_PREFIX ${ARM_PREFIX} CACHE STRING "Prefix path to ARM cross-compiler tools (ARM on Linux cross-compiling build only)" FORCE)
+    set (ARM_SYSROOT ${ARM_SYSROOT} CACHE PATH "Path to ARM system root (ARM on Linux cross-compiling build only)" FORCE)
 endif ()
 set (CMAKE_FIND_ROOT_PATH ${ARM_SYSROOT})
 

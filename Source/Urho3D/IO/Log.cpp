@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -115,7 +115,11 @@ void Log::Close()
 
 void Log::SetLevel(int level)
 {
-    assert(level >= LOG_DEBUG && level < LOG_NONE);
+    if (level < LOG_DEBUG || level > LOG_NONE)
+    {
+        URHO3D_LOGERRORF("Attempted to set erroneous log level %d", level);
+        return;
+    }
 
     level_ = level;
 }
@@ -139,7 +143,9 @@ void Log::Write(int level, const String& message)
         return;
     }
 
-    assert(level >= LOG_DEBUG && level < LOG_NONE);
+    // No-op if illegal level
+    if (level < LOG_DEBUG || level >= LOG_NONE)
+        return;
 
     // If not in the main thread, store message for later processing
     if (!Thread::IsMainThread())

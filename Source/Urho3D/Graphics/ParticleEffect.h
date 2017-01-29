@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -215,6 +215,8 @@ public:
     void SetNumTextureFrames(unsigned number);
     /// Sort the list of texture frames based on time.
     void SortTextureFrames();
+    /// Clone the particle effect.
+    SharedPtr<ParticleEffect> Clone(const String& cloneName = String::EMPTY) const;
 
     /// Return material.
     Material* GetMaterial() const { return material_; }

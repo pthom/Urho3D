@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -208,7 +208,7 @@ public:
     /// Return required package files.
     const Vector<SharedPtr<PackageFile> >& GetRequiredPackageFiles() const { return requiredPackageFiles_; }
 
-    // Return a node user variable name, or empty if not registered.
+    /// Return a node user variable name, or empty if not registered.
     const String& GetVarName(StringHash hash) const;
 
     /// Update scene. Called by HandleUpdate.

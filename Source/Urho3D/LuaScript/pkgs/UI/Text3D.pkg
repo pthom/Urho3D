@@ -7,7 +7,9 @@ enum FaceCameraMode
     FC_ROTATE_XYZ,
     FC_ROTATE_Y,
     FC_LOOKAT_XYZ,
-    FC_LOOKAT_Y
+    FC_LOOKAT_Y,
+    FC_LOOKAT_MIXED,
+    FC_DIRECTION
 };
 
 class Text3D : public Drawable
@@ -17,6 +19,7 @@ class Text3D : public Drawable
 
     bool SetFont(const String fontName, int size = DEFAULT_FONT_SIZE);
     bool SetFont(Font* font, int size = DEFAULT_FONT_SIZE);
+    bool SetFontSize(int size);
 
     void SetMaterial(Material* material);
 
@@ -57,6 +60,7 @@ class Text3D : public Drawable
     const Color& GetEffectColor() const;
     float GetEffectDepthBias() const;
     int GetWidth() const;
+    int GetHeight() const;
     int GetRowHeight() const;
     unsigned GetNumRows() const;
     unsigned GetNumChars() const;
@@ -70,7 +74,7 @@ class Text3D : public Drawable
 
     tolua_property__get_set Font* font;
     tolua_property__get_set Material* material;
-    tolua_readonly tolua_property__get_set int fontSize;
+    tolua_property__get_set int fontSize;
     tolua_property__get_set String text;
     tolua_property__get_set HorizontalAlignment textAlignment;
     tolua_property__get_set HorizontalAlignment horizontalAlignment;
@@ -85,6 +89,7 @@ class Text3D : public Drawable
     tolua_property__get_set float effectDepthBias;
     tolua_property__get_set int width;
     tolua_property__get_set Color& color; // Write only property.
+    tolua_readonly tolua_property__get_set int height;
     tolua_readonly tolua_property__get_set int rowHeight;
     tolua_readonly tolua_property__get_set unsigned numRows;
     tolua_readonly tolua_property__get_set unsigned numChars;

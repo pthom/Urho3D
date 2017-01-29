@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,10 +54,12 @@ public:
     /// Return whether a geometry update is necessary, and if it can happen in a worker thread.
     virtual UpdateGeometryType GetUpdateGeometryType();
 
-    /// Set font and font size and use signed distance field font. Return true if successful.
+    /// Set font by looking from resource cache by name and font size. Return true if successful.
     bool SetFont(const String& fontName, int size = DEFAULT_FONT_SIZE);
-    /// Set font and font size and use signed distance field font. Return true if successful.
+    /// Set font and font size. Return true if successful.
     bool SetFont(Font* font, int size = DEFAULT_FONT_SIZE);
+    /// Set font size only while retaining the existing font. Return true if successful.
+    bool SetFontSize(int size);
     /// Set material.
     void SetMaterial(Material* material);
     /// Set text. Text is assumed to be either ASCII or UTF8-encoded.
@@ -131,6 +133,8 @@ public:
     float GetEffectDepthBias() const;
     /// Return text width.
     int GetWidth() const;
+    /// Return text height.
+    int GetHeight() const;
     /// Return row height.
     int GetRowHeight() const;
     /// Return number of rows.
@@ -160,6 +164,10 @@ public:
     void SetMaterialAttr(const ResourceRef& value);
     /// Return material attribute.
     ResourceRef GetMaterialAttr() const;
+    /// Set text attribute.
+    void SetTextAttr(const String& value);
+    /// Return text attribute.
+    String GetTextAttr() const;
 
     /// Get color attribute. Uses just the top-left color.
     const Color& GetColorAttr() const { return text_.color_[0]; }
@@ -194,6 +202,8 @@ protected:
     Matrix3x4 customWorldTransform_;
     /// Text rotation mode in relation to the camera.
     FaceCameraMode faceCameraMode_;
+    /// Minimal angle between text normal and look-at direction.
+    float minAngle_;
     /// Fixed screen size flag.
     bool fixedScreenSize_;
     /// Text needs update flag.

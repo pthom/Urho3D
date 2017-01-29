@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2016 the Urho3D project.
+# Copyright (c) 2008-2017 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -70,9 +70,6 @@ if (ANDROID)
     # For Android platform, install to a path similar to ANDROID_LIBRARY_OUTPUT_PATH variable, e.g. libs/armeabi-v7a
     set (LIB_SUFFIX s/${ANDROID_NDK_ABI_NAME})
 elseif (URHO3D_64BIT)
-    if (EXISTS /usr/lib64)
-        set (HAS_LIB64 TRUE)
-    endif ()
     # Install to 'lib64' when one of these conditions is true
     if ((MINGW AND CMAKE_CROSSCOMPILING) OR URHO3D_USE_LIB64_RPM OR (HAS_LIB64 AND NOT URHO3D_USE_LIB_DEB))
         set (LIB_SUFFIX 64)
@@ -83,8 +80,6 @@ set (DEST_SHARE_DIR share/${PATH_SUFFIX})
 set (DEST_BUNDLE_DIR ${DEST_SHARE_DIR}/Applications)
 # Note to package maintainer: ${PATH_SUFFIX} for library could be removed if the extra path is not desired, but if so then the RPATH setting in Source's CMakeLists.txt needs to be adjusted accordingly
 set (DEST_LIBRARY_DIR lib${LIB_SUFFIX}/${PATH_SUFFIX})
-# TODO: Investigate the implication of using CMAKE_SYSROOT variable (available since 3.0.0) instead of our own SYSROOT variable
-set (SYSROOT ${ANDROID_SYSROOT} ${RPI_SYSROOT} ${ARM_SYSROOT} ${MINGW_SYSROOT} ${IOS_SYSROOT} ${EMSCRIPTEN_SYSROOT} CACHE INTERNAL "Path to system root of the cross-compiling target")  # SYSROOT is empty for native build
 set (DEST_PKGCONFIG_DIR lib${LIB_SUFFIX}/pkgconfig)
 # Install application launcher scripts
 file (GLOB APP_SCRIPTS ${CMAKE_SOURCE_DIR}/bin/*${SCRIPT_EXT})
@@ -111,7 +106,7 @@ if (MATCHED)
     set (CPACK_PACKAGE_VERSION_MINOR ${CMAKE_MATCH_2})
     set (CPACK_PACKAGE_VERSION_PATCH ${CMAKE_MATCH_3})
 endif ()
-set (CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/License.txt)
+set (CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE)
 set (CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
 set (CPACK_GENERATOR TGZ)
 if (ANDROID)
@@ -127,8 +122,17 @@ elseif (WEB)
 elseif (CPACK_SYSTEM_NAME STREQUAL Linux)
     if (RPI)
         set (CPACK_SYSTEM_NAME Raspberry-Pi)
+        set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE armhf)
     elseif (ARM)
-        set (CPACK_SYSTEM_NAME Arm)     # Generic ARM
+        set (CPACK_SYSTEM_NAME ARM)     # Generic ARM
+        if (URHO3D_64BIT)
+            set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE arm64)
+        else ()
+            set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE armhf)
+        endif ()
+    elseif (NOT URHO3D_64BIT)
+        set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
+        set (CPACK_RPM_PACKAGE_ARCHITECTURE i686)       # The 'package' target should be built with the help of 'setarch i686' command on a 64-bit host system
     endif ()
     if (NOT URHO3D_64BIT OR HAS_LIB64)
         list (APPEND CPACK_GENERATOR RPM)
@@ -148,9 +152,6 @@ elseif (CPACK_SYSTEM_NAME STREQUAL Linux)
 endif ()
 if (URHO3D_64BIT)
     set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}-64bit)
-else ()
-    set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
-    set (CPACK_RPM_PACKAGE_ARCHITECTURE i686)       # The 'package' target should be built with the help of 'setarch i686' command on a 64-bit host system
 endif ()
 set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}-${URHO3D_LIB_TYPE})
 if (WIN32 AND NOT URHO3D_OPENGL)
@@ -165,6 +166,8 @@ elseif (RPI AND RPI_ABI MATCHES ^armeabi-v7a)
     set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}-v7a)
 elseif (ARM_ABI_FLAGS)
     string (REGEX REPLACE "^.*mcpu=([^ ]+).*$" -\\1 CPU_NAME "${ARM_ABI_FLAGS}")
+    string (REGEX REPLACE .*- - CPU_NAME "${CPU_NAME}")
+    string (TOUPPER "${CPU_NAME}" CPU_NAME)
     set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}${CPU_NAME})
 endif ()
 if (NOT DEFINED ENV{RELEASE_TAG})
@@ -187,7 +190,7 @@ if (IOS OR URHO3D_MACOSX_BUNDLE)
         set (MACOSX_BUNDLE_SHORT_VERSION_STRING ${URHO3D_VERSION})
     endif ()
     if (NOT MACOSX_BUNDLE_COPYRIGHT)
-        set (MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2008-2016 the Urho3D project.")
+        set (MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2008-2017 the Urho3D project.")
     endif ()
 endif ()
 

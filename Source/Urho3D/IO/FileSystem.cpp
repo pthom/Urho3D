@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -636,12 +636,12 @@ bool FileSystem::DirExists(const String& pathName) const
     if (URHO3D_IS_ASSET(fixedName))
     {
         // Split the pathname into two components: the longest parent directory path and the last name component
-        String assetPath(URHO3D_ASSET((fixedName + '/')));
+        String assetPath(URHO3D_ASSET((fixedName + "/")));
         String parentPath;
         unsigned pos = assetPath.FindLast('/', assetPath.Length() - 2);
         if (pos != String::NPOS)
         {
-            parentPath = assetPath.Substring(0, pos - 1);
+            parentPath = assetPath.Substring(0, pos);
             assetPath = assetPath.Substring(pos + 1);
         }
         assetPath.Resize(assetPath.Length() - 1);

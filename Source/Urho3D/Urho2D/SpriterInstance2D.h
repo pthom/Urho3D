@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ public:
 
     /// Return current entity.
     Entity* GetEntity() const { return entity_; }
-    // Return current animation.
+    /// Return current animation.
     Animation* GetAnimation() const { return animation_; }
     /// Return root spatial info.
     const SpatialInfo& GetSpatialInfo() const { return spatialInfo_; }

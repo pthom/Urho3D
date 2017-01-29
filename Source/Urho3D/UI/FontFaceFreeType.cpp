@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -214,7 +214,7 @@ bool FontFaceFreeType::Load(const unsigned char* fontData, unsigned fontDataSize
         // are 29354 glyphs in msyh.ttf
         FT_ULong tagKern = FT_MAKE_TAG('k', 'e', 'r', 'n');
         FT_ULong kerningTableSize = 0;
-        FT_Error error = FT_Load_Sfnt_Table(face, tagKern, 0, NULL, &kerningTableSize);
+        FT_Error error = FT_Load_Sfnt_Table(face, tagKern, 0, 0, &kerningTableSize);
         if (error)
         {
             URHO3D_LOGERROR("Could not get kerning table length");
@@ -412,23 +412,23 @@ bool FontFaceFreeType::LoadCharGlyph(unsigned charCode, Image* image)
             FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL);
             if (slot->bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
             {
-                for (unsigned int y = 0; y < slot->bitmap.rows; ++y)
+                for (unsigned y = 0; y < (unsigned)slot->bitmap.rows; ++y)
                 {
                     unsigned char* src = slot->bitmap.buffer + slot->bitmap.pitch * y;
                     unsigned char* rowDest = dest + y * pitch;
 
-                    for (unsigned int x = 0; x < slot->bitmap.width; ++x)
+                    for (unsigned x = 0; x < (unsigned)slot->bitmap.width; ++x)
                         rowDest[x] = (unsigned char)((src[x >> 3] & (0x80 >> (x & 7))) ? 255 : 0);
                 }
             }
             else
             {
-                for (unsigned int y = 0; y < slot->bitmap.rows; ++y)
+                for (unsigned y = 0; y < (unsigned)slot->bitmap.rows; ++y)
                 {
                     unsigned char* src = slot->bitmap.buffer + slot->bitmap.pitch * y;
                     unsigned char* rowDest = dest + y * pitch;
 
-                    for (unsigned int x = 0; x < slot->bitmap.width; ++x)
+                    for (unsigned x = 0; x < (unsigned)slot->bitmap.width; ++x)
                         rowDest[x] = src[x];
                 }
             }

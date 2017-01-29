@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2016 the Urho3D project.
+// Copyright (c) 2008-2017 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -103,31 +103,37 @@ bool ToBool(const char* source)
     return false;
 }
 
-int ToInt(const String& source)
+int ToInt(const String& source, int base)
 {
-    return ToInt(source.CString());
+    return ToInt(source.CString(), base);
 }
 
-int ToInt(const char* source)
+int ToInt(const char* source, int base)
 {
     if (!source)
         return 0;
 
-    // Explicitly ask for base 10 to prevent source starts with '0' or '0x' from being converted to base 8 or base 16, respectively
-    return (int)strtol(source, 0, 10);
+    // Shield against runtime library assert by converting illegal base values to 0 (autodetect)
+    if (base < 2 || base > 36)
+        base = 0;
+
+    return (int)strtol(source, 0, base);
 }
 
-unsigned ToUInt(const String& source)
+unsigned ToUInt(const String& source, int base)
 {
-    return ToUInt(source.CString());
+    return ToUInt(source.CString(), base);
 }
 
-unsigned ToUInt(const char* source)
+unsigned ToUInt(const char* source, int base)
 {
     if (!source)
         return 0;
 
-    return (unsigned)strtoul(source, 0, 10);
+    if (base < 2 || base > 36)
+        base = 0;
+
+    return (unsigned)strtoul(source, 0, base);
 }
 
 float ToFloat(const String& source)
@@ -399,7 +405,7 @@ Variant ToVectorVariant(const char* source)
         break;
 
     default:
-        assert(false);  // Should not get here
+        // Illegal input. Return variant remains empty
         break;
     }
 
